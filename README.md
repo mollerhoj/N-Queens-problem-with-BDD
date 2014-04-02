@@ -1,6 +1,6 @@
 N-Queens problem with BDD
 =========================
-by Jens Dahl Mollerhoj and Jonas Busk
+by Mikkel Riise Lund, Jens Dahl Mollerhoj and Jonas Busk
 
 This java program uses JavaBDD to solve the nqueens problem. A GUI lets the
 user see how her decisions affects the remaining solutions. A so called "Interactive configurator"
