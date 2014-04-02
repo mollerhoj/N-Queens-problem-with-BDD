@@ -29,13 +29,12 @@ public class QueensLogic {
         this.x = size;
         this.y = size;
         this.board = new int[x][y];
-        System.out.println("initialize Game");
         buildBDD();
+        //Run update invalid (Not really needed in this case, but good practice)
+        updateInvalid();
     }
 
     public void buildBDD() {
-        System.out.println("build BDD");
-
         //Factory
         this.factory = JFactory.init(2000000, 200000); // set buffer etc.
 
@@ -51,53 +50,74 @@ public class QueensLogic {
 
         //Add the rules to the bdd
         createRules();
+        createEightRule();
+    }
 
-        //Run update invalid (Not really needed in this case, but good practice)
-        updateInvalid();
+    //All rows should have a queen:
+    private void createEightRule() {
+      for (int y = 0; y < N; y++) {
+        BDD sub_bdd = False;
+
+        for (int x = 0; x < N; x++) {
+          sub_bdd = sub_bdd.or(this.factory.ithVar(place(x,y)));
+        }
+
+        //sub_bdd must be true
+        this.bdd = this.bdd.and(sub_bdd);
+      }
     }
 
     private void createRules() {
-      createColumnRules();
+      for (int x = 0; x < N; x++) {
+          for (int y = 0; y < N; y++) {
+              createCellRule(x,y);
+          }
+      }
     }
 
-    private void createRowRules() {
-        for (int row = 0; row < N; row++) {
-          BDD column_bdd = False;
-          for (int column = 0; column < N; column++) {
-            // The column must be true, the rest must be false:
-            BDD column_solution_bdd = True;
-            column_solution_bdd = column_solution_bdd.and(this.factory.ithVar(place(column,row)));
-            for (int x = 0; x < N; x++) {
-              if (x != column) {
-                column_solution_bdd = column_solution_bdd.and(this.factory.nithVar(place(x,row)));
-              }
-            }
-            //Add solution as a possibility to main bdd
-            column_bdd = column_bdd.or(column_solution_bdd);
-          }
-          //Add column bdd to main bdd
-          this.bdd = this.bdd.and(column_bdd);
+    private void createCellRule(int x,int y) {
+      BDD sub_bdd = False;
+      BDD rest_false_bdd = True;
+      
+      //All other y's must be false
+      for (int yy = 0; yy < N; yy++) {
+        if (y != yy) {
+          rest_false_bdd = rest_false_bdd.and(this.factory.nithVar(place(x,yy)));
         }
-    }
+      }
 
-    private void createColumnRules() {
-        for (int row = 0; row < N; row++) {
-          BDD column_bdd = False;
-          for (int column = 0; column < N; column++) {
-            // The column must be true, the rest must be false:
-            BDD column_solution_bdd = True;
-            column_solution_bdd = column_solution_bdd.and(this.factory.ithVar(place(column,row)));
-            for (int x = 0; x < N; x++) {
-              if (x != column) {
-                column_solution_bdd = column_solution_bdd.and(this.factory.nithVar(place(x,row)));
-              }
-            }
-            //Add solution as a possibility to main bdd
-            column_bdd = column_bdd.or(column_solution_bdd);
-          }
-          //Add column bdd to main bdd
-          this.bdd = this.bdd.and(column_bdd);
+      //All other x's must be false
+      for (int xx = 0; xx < N; xx++) {
+        if (x != xx) {
+          rest_false_bdd = rest_false_bdd.and(this.factory.nithVar(place(xx,y)));
         }
+      }
+
+      //All other y+xx-x must be false
+      for (int xx = 0; xx < N; xx++) {
+        if (x != xx) {
+          if ((y+xx-x < 8) && (y+xx-x > 0)) {
+            rest_false_bdd = rest_false_bdd.and(this.factory.nithVar(place(xx,y+xx-x)));
+          }
+        }
+      }
+
+      //All other y-xx+xx must be false
+      for (int xx = 0; xx < N; xx++) {
+        if (x != xx) {
+          if ((y-xx+x < 8) && (y-xx+x > 0)) {
+            rest_false_bdd = rest_false_bdd.and(this.factory.nithVar(place(xx,y-xx+x)));
+          }
+        }
+      }
+
+      //Either the x,y is false
+      sub_bdd = sub_bdd.or(this.factory.nithVar(place(x,y)));
+      //Or (if the x,y is true) the rest is false
+      sub_bdd = sub_bdd.or(rest_false_bdd);
+
+      //sub_bdd must be true
+      this.bdd = this.bdd.and(sub_bdd);
     }
 
     private int place(int column,int row) {
@@ -112,7 +132,6 @@ public class QueensLogic {
     }
    
     public int[][] getGameBoard() {
-        System.out.println("get GameBoard");
         return board;
     }
 
@@ -129,7 +148,6 @@ public class QueensLogic {
     }
 
     public boolean insertQueen(int column, int row) {
-        System.out.println("insertQueen");
 
         if (board[column][row] == -1 || board[column][row] == 1) {
             return true;
