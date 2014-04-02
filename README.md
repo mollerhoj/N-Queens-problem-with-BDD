@@ -56,6 +56,7 @@ If there is a queen, there can not be any queens in the cells in the same column
 If there is a queen, there can not be any queens in the cells in the same diagonals.
 
 ### How to compile and run the code:
+You need the javabdd-1.0b2.jar from JavaBDDs website to be in the same folder as the project. Then run the following command:
 ````
 javac -cp "javabdd-1.0b2.jar:." *.java && java -cp "javabdd-1.0b2.jar:." ShowBoard
 ````
