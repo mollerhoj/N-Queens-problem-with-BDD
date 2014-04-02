@@ -55,6 +55,15 @@ If there is a queen, there can not be any queens in the cells in the same row.
 If there is a queen, there can not be any queens in the cells in the same column.
 If there is a queen, there can not be any queens in the cells in the same diagonals.
 
+As an example, this is the part that makes use that  there can not be any queens in the same row:
+````
+//All other x's must be false
+for (int xx = 0; xx < N; xx++) {
+  if (x != xx) {
+    rest_false_bdd = rest_false_bdd.and(this.factory.nithVar(place(xx,y)));
+  }
+}
+````
 ### How to compile and run the code:
 You need the javabdd-1.0b2.jar from JavaBDDs website to be in the same folder as the project. Then run the following command:
 ````
